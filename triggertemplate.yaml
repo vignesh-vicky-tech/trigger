@@ -13,7 +13,7 @@ spec:
         generateName: kaniko-pipeline-run
       spec:
         pipelineRef:
-          name: kaniko-pipeline1
+          name: nodejs-pipeline4
         params:
           - name: git_revision
             value: $(tt.params.git_revision)
