@@ -1,0 +1,57 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: tekton-pipeline
+  namespace: default
+spec:
+  params:
+    - name: repo-url
+      type: string
+    - name: image-reference
+      type: string
+    - name: image-tag
+      type: string
+  workspaces:
+    - name: tekton-workspace
+  tasks:
+    - name: fetch-repository
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: tekton-workspace
+      params:
+        - name: url
+          value: $(params.repo-url)
+        - name: subdirectory
+          value: ""
+        - name: deleteExisting
+          value: "true"
+    - name: build-push-image
+      taskRef:
+        name: buildah
+      runAfter:
+        - fetch-repository
+      workspaces:
+        - name: source
+          workspace: tekton-workspace
+      params:
+        - name: IMAGE
+          value: $(params.image-reference):$(tasks.fetch-repository.results.commit)
+        - name: CONTEXT
+          value: "source"
+        - name: FORMAT
+          value: "docker"
+    - name: create-deployment # The name of the third and final task
+      taskRef:
+        name: kubernetes-actions # The name of the task this pipeline should use
+      runAfter:
+        - build-push-image
+     workspaces:
+        - name: manifest-dir
+          workspace: tekton-workspace
+      params:
+        - name: script
+          value: |
+            kubectl apply -f https://raw.githubusercontent.com/vignesh-vicky-tech/html-apps/main/manifest/deployment.yaml
+
