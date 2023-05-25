@@ -2,6 +2,7 @@ apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerBinding
 metadata:
   name: github-binding
+  namespace: default
 spec:
   params:
     - name: git_revision
