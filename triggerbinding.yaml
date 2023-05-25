@@ -6,4 +6,7 @@ spec:
   params:
     - name: git_revision
       value: $(body.ref) #  Example: refs/heads/main or refs/tags/v3.14.1
+    - name: gitrepositoryurl
+      value: $(body.repository.clone_url)
+
 
