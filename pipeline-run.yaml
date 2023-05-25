@@ -1,0 +1,29 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: tekton-pipelinerun
+  namespace: default
+spec:
+  serviceAccountName: dockerhub-service-account
+  pipelineRef:
+    name: tekton-pipeline
+  podTemplate:
+    securityContext:
+      fsGroup: 65532
+  params:
+  - name: repo-url
+    value: https://github.com/vignesh-vicky-tech/html-apps.git
+  - name: image-reference
+    value: vigneshvicky12345/maven
+  - name: image-tag
+    value: latest
+  workspaces:
+    - name: tekton-workspace
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 25Gi
+
