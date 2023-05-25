@@ -2,6 +2,7 @@ apiVersion: triggers.tekton.dev/v1beta1
 kind: EventListener
 metadata:
   name: github-listener
+  namespace: default
 spec:
   serviceAccountName: tekton-triggers-example-sa
   triggers:
