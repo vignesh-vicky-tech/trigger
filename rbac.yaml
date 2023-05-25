@@ -1,29 +1,42 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: tekton-triggers-example-sa
+  namespace: default ## namespace where the service account will be created
+  name: tekton-buildah-triggers-sa ## name of the service account
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
+kind: ClusterRole
 metadata:
-  name: triggers-example-eventlistener-binding
-subjects:
-  - kind: ServiceAccount
-    name: tekton-triggers-example-sa
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
   name: tekton-triggers-eventlistener-roles
+rules:
+- apiGroups: ["triggers.tekton.dev"]
+  resources: ["eventlisteners", "triggerbindings", "triggertemplates", "triggers", "interceptors", "clustertriggerbindings", "clusterinterceptors"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["tekton.dev"]
+  resources: ["pipelineruns", "pipelineresources", "taskruns"]
+  verbs: ["create"]
+- apiGroups: [""]
+  resources: ["serviceaccounts"]
+  verbs: ["impersonate"]
+- apiGroups: ["policy"]
+  resources: ["podsecuritypolicies"]
+  resourceNames: ["tekton-triggers"]
+  verbs: ["use"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: triggers-example-eventlistener-clusterbinding
+  name: triggers-eventlistener-clusterbinding
 subjects:
-  - kind: ServiceAccount
-    name: tekton-triggers-example-sa
-    namespace: default
+- kind: ServiceAccount
+  name: tekton-buildah-triggers-sa ## name of the service account
+  namespace: git-clone ## namespace where the service account will be created
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: tekton-triggers-eventlistener-clusterroles
+  name: tekton-triggers-eventlistener-roles
+
+
