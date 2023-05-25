@@ -2,27 +2,39 @@ apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate
 metadata:
   name: github-template
+  namespace: default
 spec:
   params:
-    - name: git_revision
+    - name: gitrevision
+      description: The git revision
+    - name: gitrepositoryurl
+      description: The git repository url
   resourcetemplates:
-      # the section below is exactly the same as writing a PipelineRun
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
       metadata:
-        generateName: kaniko-pipeline-run
+        generateName: tekton-pipelinerun
+        namespace: default
       spec:
+        serviceAccountName: dockerhub-service-account
         pipelineRef:
-          name: nodejs-pipeline4
+          name: tekton-pipeline
+        podTemplate:
+          securityContext:
+            fsGroup: 65532
         params:
-          - name: git_revision
-            value: $(tt.params.git_revision)
+          - name: repo-url
+            value: "$(tt.params.gitrepositoryurl)"
+          - name: image-reference
+            value: vigneshvicky12345/maven
+          - name: image-tag
+            value: "$(tt.params.gitrevision)"
         workspaces:
-          - name: git-source
+          - name: tekton-workspace
             volumeClaimTemplate:
               spec:
                 accessModes:
                   - ReadWriteOnce
                 resources:
                   requests:
-                    storage: 100m
+                    storage: 25Gi
